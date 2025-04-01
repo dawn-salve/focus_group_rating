@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Statement Rating</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: auto; padding: 2em; }
+    h2 { text-align: center; }
+    .section { margin-bottom: 2em; }
+    label { font-weight: bold; }
+    .scale-option { margin: 0.2em 0.5em; }
+    .explanation { font-size: 0.9em; color: #555; margin-bottom: 0.5em; }
+    .rating-group { margin-bottom: 1.2em; }
+    button { padding: 0.7em 1.5em; font-size: 1em; }
+    #thanks { display: none; font-weight: bold; color: green; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <h2>Rate the Statement</h2>
+
+  <div class="section">
+    <label>Statement:</label>
+    <p id="statement">"I have completed the data analysis for my client..."</p>
+  </div>
+
+  <div class="section">
+    <label for="participant">Participant ID:</label><br>
+    <input type="text" id="participant" placeholder="e.g., p01" required>
+  </div>
+
+  <!-- Rating questions -->
+  <div class="section">
+
+    <div class="rating-group">
+      <label>Understandable (0-1)</label>
+      <div class="explanation">Is the statement clear and easy to follow?</div>
+      <label><input type="radio" name="understandable" value="0"> 0 = Not clear</label>
+      <label class="scale-option"><input type="radio" name="understandable" value="1"> 1 = Clear</label>
+    </div>
+
+    <div class="rating-group">
+      <label>Natural (1-3)</label>
+      <div class="explanation">Does it sound like something a real person would say?</div>
+      <label><input type="radio" name="natural" value="1"> 1</label>
+      <label class="scale-option"><input type="radio" name="natural" value="2"> 2</label>
+      <label class="scale-option"><input type="radio" name="natural" value="3"> 3</label>
+    </div>
+
+    <div class="rating-group">
+      <label>Maintains Context (1-3)</label>
+      <div class="explanation">Is it consistent with what came before in the conversation?</div>
+      <label><input type="radio" name="maintains_context" value="1"> 1</label>
+      <label class="scale-option"><input type="radio" name="maintains_context" value="2"> 2</label>
+      <label class="scale-option"><input type="radio" name="maintains_context" value="3"> 3</label>
+    </div>
+
+    <div class="rating-group">
+      <label>Interesting (1-3)</label>
+      <div class="explanation">Is the statement engaging or insightful?</div>
+      <label><input type="radio" name="interesting" value="1"> 1</label>
+      <label class="scale-option"><input type="radio" name="interesting" value="2"> 2</label>
+      <label class="scale-option"><input type="radio" name="interesting" value="3"> 3</label>
+    </div>
+
+    <div class="rating-group">
+      <label>Uses Knowledge (0-1)</label>
+      <div class="explanation">Does it use relevant knowledge or background info effectively?</div>
+      <label><input type="radio" name="uses_knowledge" value="0"> 0</label>
+      <label class="scale-option"><input type="radio" name="uses_knowledge" value="1"> 1</label>
+    </div>
+
+    <div class="rating-group">
+      <label>Overall Quality (1-3)</label>
+      <div class="explanation">Overall, how would you rate this statement?</div>
+      <label><input type="radio" name="overall_quality" value="1"> 1</label>
+      <label class="scale-option"><input type="radio" name="overall_quality" value="2"> 2</label>
+      <label class="scale-option"><input type="radio" name="overall_quality" value="3"> 3</label>
+    </div>
+
+  </div>
+
+  <div class="section" style="text-align: center;">
+    <button onclick="submitForm()">Submit Rating</button>
+  </div>
+
+  <p id="thanks">✅ Thank you for your rating!</p>
+
+  <script>
+    const SHEETDB_API = "https://sheetdb.io/api/v1/YOUR_SHEETDB_ID"; // Replace with your real SheetDB URL
+
+    function getRadioValue(name) {
+      const selected = document.querySelector(`input[name="${name}"]:checked`);
+      return selected ? selected.value : null;
+    }
+
+    function submitForm() {
+      const participant = document.getElementById("participant").value.trim();
+      if (!participant) return alert("Please enter your participant ID.");
+
+      const data = {
+        data: {
+          timestamp: new Date().toISOString(),
+          participant: participant,
+          statement_id: "statement_1",
+          understandable: getRadioValue("understandable"),
+          natural: getRadioValue("natural"),
+          maintains_context: getRadioValue("maintains_context"),
+          interesting: getRadioValue("interesting"),
+          uses_knowledge: getRadioValue("uses_knowledge"),
+          overall_quality: getRadioValue("overall_quality")
+        }
+      };
+
+      if (Object.values(data.data).includes(null)) {
+        return alert("Please answer all questions before submitting.");
+      }
+
+      fetch(SHEETDB_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      }).then(() => {
+        document.getElementById("thanks").style.display = "block";
+      }).catch(() => {
+        alert("Error submitting the form. Please try again.");
+      });
+    }
+  </script>
+
+</body>
+</html>
